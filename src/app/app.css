@@ -1,0 +1,147 @@
+.app-container {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 16px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Practice / Retry Mode Banner */
+.retry-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.1) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-left: 4px solid #f59e0b;
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  animation: fadeIn 0.3s ease-out;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.15);
+}
+
+.retry-banner-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.retry-badge {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fef3c7;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.retry-message {
+  color: #fef3c7;
+  font-size: 0.9rem;
+}
+
+.retry-message strong {
+  color: #fbbf24;
+}
+
+.btn-exit-retry {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.btn-exit-retry:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.active-question-wrapper {
+  animation: fadeIn 0.35s ease-out;
+}
+
+/* State Cards (Loading / Error) */
+.state-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(99, 102, 241, 0.2);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.state-icon.warning {
+  font-size: 2.5rem;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--accent-gradient);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 12px 26px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+  transition: all var(--transition-base);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.55);
+}
+
+@media (max-width: 720px) {
+  .app-container {
+    padding: 12px 12px 60px;
+  }
+
+  .retry-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-exit-retry {
+    justify-content: center;
+  }
+}

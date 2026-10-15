@@ -1,0 +1,206 @@
+<article 
+  class="quiz-card"
+  [class.is-active]="isActive()"
+  [class.card-history]="!isActive()"
+  [class.is-confirmed]="item().isConfirmed"
+  [class.card-success]="item().isConfirmed && item().isFullyCorrect"
+  [class.card-failure]="item().isConfirmed && item().isFullyCorrect === false">
+  
+  <!-- Question Header Meta -->
+  <div class="question-header">
+    <div class="question-badges">
+      <span class="badge-seq">
+        {{ isActive() ? 'Active Question #' + item().questionNumber : '#' + item().questionNumber }}
+      </span>
+
+      @if (item().question.isMultipleChoice) {
+        <span class="badge-type multi">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+          Multiple Choice (Checkboxes)
+        </span>
+      } @else {
+        <span class="badge-type single">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+          </svg>
+          Single Choice (Radio)
+        </span>
+      }
+
+      @if (item().question.instruction) {
+        <span class="badge-instruction">
+          {{ item().question.instruction }}
+        </span>
+      }
+
+      @if (item().isConfirmed) {
+        <span class="badge-eval-status" [class.success]="item().isFullyCorrect" [class.failure]="!item().isFullyCorrect">
+          {{ item().isFullyCorrect ? '✓ Passed' : '✕ Failed' }}
+        </span>
+      }
+    </div>
+
+    <h2 [class.question-title]="isActive()" [class.history-question-title]="!isActive()">
+      {{ item().question.title }}
+    </h2>
+
+    <!-- Multiple Choice Tip Callout indicating the number of answers needed -->
+    @if (item().question.isMultipleChoice) {
+      <div class="question-tip" [class.tip-confirmed]="item().isConfirmed">
+        <div class="tip-main">
+          <span class="tip-icon">💡</span>
+          <span class="tip-text">
+            <strong>{{ item().question.expectedCorrectCount }} answers required</strong> for this question.
+          </span>
+        </div>
+
+        @if (isActive() && !item().isConfirmed) {
+          <div class="tip-count-pill"
+            [class.count-complete]="item().selectedOptionIds.length === item().question.expectedCorrectCount"
+            [class.count-over]="item().selectedOptionIds.length > item().question.expectedCorrectCount">
+            <span class="count-numbers">{{ item().selectedOptionIds.length }} / {{ item().question.expectedCorrectCount }}</span>
+            <span class="count-label">selected</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Options List -->
+  <div class="options-container" [attr.role]="item().question.isMultipleChoice ? 'group' : 'radiogroup'">
+    @for (option of item().question.options; track option.id) {
+      @let statusInfo = getOptionStatus(option);
+      @let isSelected = item().selectedOptionIds.includes(option.id);
+
+      <div 
+        class="option-card"
+        [class.selected]="isSelected"
+        [class.locked]="!isActive() || item().isConfirmed"
+        [class.status-correct-picked]="statusInfo.status === 'correct-picked'"
+        [class.status-correct-missed]="statusInfo.status === 'correct-missed'"
+        [class.status-incorrect-picked]="statusInfo.status === 'incorrect-picked'"
+        [class.status-neutral-faded]="statusInfo.status === 'neutral' && item().isConfirmed"
+        (click)="onToggleOption(option.id)"
+        [attr.tabindex]="isActive() && !item().isConfirmed ? '0' : '-1'"
+        (keydown.enter)="onToggleOption(option.id)"
+        (keydown.space)="$event.preventDefault(); onToggleOption(option.id)">
+        
+        <!-- Checkbox or Radio Icon -->
+        <div class="option-indicator" [class.is-radio]="!item().question.isMultipleChoice">
+          @if (item().isConfirmed) {
+            @if (option.isCorrect) {
+              <svg class="indicator-icon icon-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            } @else if (isSelected) {
+              <svg class="indicator-icon icon-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            } @else {
+              <div class="indicator-dot"></div>
+            }
+          } @else {
+            @if (item().question.isMultipleChoice) {
+              <div class="checkbox-box" [class.checked]="isSelected">
+                @if (isSelected) {
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                }
+              </div>
+            } @else {
+              <div class="radio-circle" [class.checked]="isSelected">
+                <div class="radio-inner"></div>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Option Text -->
+        <div class="option-content">
+          <span class="option-text">{{ option.text }}</span>
+        </div>
+
+        <!-- Feedback Badges -->
+        @if (item().isConfirmed) {
+          <div class="option-badge-result">
+            @if (statusInfo.status === 'correct-picked') {
+              <span class="badge-feedback correct">✓ Correct</span>
+            } @else if (statusInfo.status === 'correct-missed') {
+              <span class="badge-feedback missed">★ Expected</span>
+            } @else if (statusInfo.status === 'incorrect-picked') {
+              <span class="badge-feedback incorrect">✕ Incorrect</span>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Feedback Summary Banner once confirmed (on active card) -->
+  @if (isActive() && item().isConfirmed) {
+    <div class="feedback-banner" [class.success]="item().isFullyCorrect" [class.failure]="!item().isFullyCorrect">
+      <div class="banner-icon">
+        {{ item().isFullyCorrect ? '🎉' : '💡' }}
+      </div>
+      <div class="banner-body">
+        <h4 class="banner-title">
+          {{ item().isFullyCorrect ? 'Excellent! 100% correct' : 'Incorrect answer' }}
+        </h4>
+        <p class="banner-message">
+          @if (item().isFullyCorrect) {
+            All expected answers were correctly identified without any errors.
+          } @else {
+            To pass this question, all correct answers must be selected without any incorrect ones.
+          }
+        </p>
+      </div>
+    </div>
+  }
+
+  <!-- Active Card Action Footer (Only for active question) -->
+  @if (isActive()) {
+    <div class="card-footer">
+      <div class="footer-hint">
+        @if (!item().isConfirmed) {
+          <span>Select your option(s) then confirm.</span>
+        } @else {
+          <span class="text-success">Answer recorded. Ready for the next question!</span>
+        }
+      </div>
+
+      <div class="footer-actions">
+        @if (!item().isConfirmed) {
+          <!-- Confirm Button -->
+          <button 
+            id="btn-confirm-active"
+            class="btn-primary" 
+            [disabled]="!canConfirm()" 
+            (click)="onConfirm()">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Confirm</span>
+          </button>
+        } @else {
+          <!-- Next Button -->
+          <button 
+            id="btn-next-active"
+            class="btn-primary btn-next-pulse" 
+            (click)="onNext()">
+            <span>Next Question →</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        }
+      </div>
+    </div>
+  }
+</article>

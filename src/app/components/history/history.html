@@ -1,0 +1,23 @@
+<section class="history-section">
+  <div class="history-header">
+    <div class="history-title-group">
+      <h3 class="history-title">Previous Questions</h3>
+      <span class="history-counter">({{ quiz.history().length }} answered)</span>
+    </div>
+    
+    <button 
+      id="btn-toggle-history"
+      class="btn-secondary btn-sm" 
+      (click)="onToggleHistory()">
+      {{ quiz.showHistory() ? 'Hide History' : 'Show History' }}
+    </button>
+  </div>
+
+  @if (quiz.showHistory()) {
+    <div class="history-list">
+      @for (item of quiz.history(); track item.streamId) {
+        <app-question-card [item]="item" [isActive]="false" />
+      }
+    </div>
+  }
+</section>

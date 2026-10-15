@@ -1,0 +1,91 @@
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div class="brand-info">
+      <h1 class="brand-title">ScrumDev</h1>
+      <span class="brand-subtitle">Infinite Practice</span>
+    </div>
+  </div>
+
+  <!-- Live Global Rating in % -->
+  <div class="global-rating-card" title="Overall score: 100% expected answers required without error to pass each question">
+    <div class="rating-info">
+      <span class="rating-label">Overall Score</span>
+      <div class="rating-score-row">
+        <span class="rating-percentage" 
+          [class.rating-high]="quiz.sessionStats().ratingPercentage >= 80"
+          [class.rating-mid]="quiz.sessionStats().ratingPercentage >= 50 && quiz.sessionStats().ratingPercentage < 80"
+          [class.rating-low]="quiz.sessionStats().ratingPercentage < 50">
+          {{ quiz.answeredCount() === 0 ? '--' : quiz.sessionStats().ratingPercentage + '%' }}
+        </span>
+        <span class="rating-details">
+          {{ quiz.sessionStats().correctCount }} / {{ quiz.sessionStats().answeredCount }} passed
+        </span>
+      </div>
+    </div>
+
+    <!-- Rating Indicator Pill -->
+    <div class="rating-pill" 
+      [class.pill-success]="quiz.sessionStats().ratingPercentage >= 80"
+      [class.pill-warning]="quiz.sessionStats().ratingPercentage >= 50 && quiz.sessionStats().ratingPercentage < 80"
+      [class.pill-danger]="quiz.sessionStats().ratingPercentage < 50">
+      @if (quiz.answeredCount() === 0) {
+        <span>Ready</span>
+      } @else if (quiz.sessionStats().ratingPercentage >= 80) {
+        <span>🏆 Mastery</span>
+      } @else if (quiz.sessionStats().ratingPercentage >= 50) {
+        <span>📈 In Progress</span>
+      } @else {
+        <span>💡 Needs Work</span>
+      }
+    </div>
+  </div>
+
+  <!-- Header Actions -->
+  <div class="header-actions">
+    <!-- Retry Failed Questions Button (memorized mistakes) -->
+    @if (quiz.failedCount() > 0) {
+      <button 
+        id="btn-retry-failed"
+        class="btn-retry-failed"
+        [class.is-active]="quiz.isRetryMode()"
+        (click)="onToggleRetryMode()"
+        [title]="quiz.isRetryMode() ? 'Exit practice mode and return to all questions' : 'Review and repass questions you answered incorrectly'">
+        <span class="retry-icon">⚡</span>
+        <span class="retry-text">
+          {{ quiz.isRetryMode() ? 'Exit Practice (' + quiz.failedCount() + ')' : 'Retry Failed (' + quiz.failedCount() + ')' }}
+        </span>
+      </button>
+    }
+
+    <button 
+      id="btn-reset-session"
+      class="btn-icon" 
+      (click)="onResetSession()"
+      title="Reset current session">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="1 4 1 10 7 10"></polyline>
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+      </svg>
+    </button>
+
+    <button 
+      id="btn-open-editor"
+      class="btn-secondary" 
+      (click)="onOpenEditor()"
+      title="Edit or import Markdown questions">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Markdown</span>
+    </button>
+  </div>
+</header>

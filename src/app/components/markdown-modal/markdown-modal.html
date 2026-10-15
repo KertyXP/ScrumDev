@@ -1,0 +1,56 @@
+@if (isOpen()) {
+  <div class="modal-overlay" (click)="onClose()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Questions Markdown File</h3>
+          <span class="modal-subtitle">Edit, add or import your own questions</span>
+        </div>
+        <button class="btn-close" (click)="onClose()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="editor-toolbar">
+          <label class="btn-upload">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span>Import .md file</span>
+            <input type="file" accept=".md,.txt" (change)="onFileUpload($event)" style="display: none;">
+          </label>
+
+          <button class="btn-secondary btn-sm" (click)="onReloadDefault()">
+            Reload default questions.md
+          </button>
+
+          <div class="preview-counter">
+            Detected: <strong>{{ parsePreviewCount() }} question(s)</strong>
+          </div>
+        </div>
+
+        <textarea 
+          class="markdown-textarea" 
+          [ngModel]="markdownInput()" 
+          (ngModelChange)="onMarkdownChange($event)"
+          placeholder="Paste or write your questions in Markdown format here...">
+        </textarea>
+        
+        <div class="format-help">
+          <strong>Expected format:</strong>
+          <code>### Your question? (choose the best answer)</code><br>
+          <code>- [x] Correct answer</code><br>
+          <code>- [ ] Incorrect answer</code>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="onClose()">Cancel</button>
+        <button class="btn-primary" (click)="onApply()">
+          Apply and start session ({{ parsePreviewCount() }})
+        </button>
+      </div>
+    </div>
+  </div>
+}
