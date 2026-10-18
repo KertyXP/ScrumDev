@@ -13,19 +13,33 @@ export class HeaderComponent {
   readonly quiz = inject(QuizService);
   readonly openEditor = output<void>();
 
-  onToggleRetryMode(): void {
-    if (this.quiz.isRetryMode()) {
-      this.quiz.exitRetryMode();
-    } else {
-      this.quiz.startRetryMode();
-    }
-  }
-
   onResetSession(): void {
-    this.quiz.resetSession();
+    if (window.confirm('Voulez-vous réinitialiser le score et démarrer une nouvelle session ?')) {
+      this.quiz.resetSession(true);
+    }
   }
 
   onOpenEditor(): void {
     this.openEditor.emit();
+  }
+
+  onClearMemory(): void {
+    if (
+      window.confirm(
+        'Voulez-vous réinitialiser l’historique local des questions et les exclusions ?',
+      )
+    ) {
+      this.quiz.clearQuestionMemory();
+    }
+  }
+
+  onUnexcludeAll(): void {
+    if (
+      window.confirm(
+        'Voulez-vous réintégrer toutes les questions marquées comme "trop simples" ?',
+      )
+    ) {
+      this.quiz.unexcludeAllQuestions();
+    }
   }
 }

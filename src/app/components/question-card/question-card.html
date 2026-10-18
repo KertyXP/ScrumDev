@@ -8,66 +8,33 @@
   
   <!-- Question Header Meta -->
   <div class="question-header">
-    <div class="question-badges">
-      <span class="badge-seq">
-        {{ isActive() ? 'Active Question #' + item().questionNumber : '#' + item().questionNumber }}
-      </span>
+    @if (displayInstruction() || item().isExcluded || (item().isConfirmed && !item().isFullyCorrect)) {
+      <div class="question-badges">
+        @if (displayInstruction(); as instruction) {
+          <span class="badge-instruction">
+            {{ instruction }}
+          </span>
+        }
 
-      @if (item().question.isMultipleChoice) {
-        <span class="badge-type multi">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 11 12 14 22 4"></polyline>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-          </svg>
-          Multiple Choice (Checkboxes)
-        </span>
-      } @else {
-        <span class="badge-type single">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
-          </svg>
-          Single Choice (Radio)
-        </span>
-      }
+        <!-- Excluded Status Badge -->
+        @if (item().isExcluded) {
+          <span class="badge-served excluded" title="Question marquée comme trop simple : écartée des prochains examens">
+            🚫 Ignorée (trop simple)
+          </span>
+        }
 
-      @if (item().question.instruction) {
-        <span class="badge-instruction">
-          {{ item().question.instruction }}
-        </span>
-      }
-
-      @if (item().isConfirmed) {
-        <span class="badge-eval-status" [class.success]="item().isFullyCorrect" [class.failure]="!item().isFullyCorrect">
-          {{ item().isFullyCorrect ? '✓ Passed' : '✕ Failed' }}
-        </span>
-      }
-    </div>
+        <!-- Evaluation Status (Only for failure) -->
+        @if (item().isConfirmed && !item().isFullyCorrect) {
+          <span class="badge-eval-status failure">
+            ✕ Failed
+          </span>
+        }
+      </div>
+    }
 
     <h2 [class.question-title]="isActive()" [class.history-question-title]="!isActive()">
       {{ item().question.title }}
     </h2>
-
-    <!-- Multiple Choice Tip Callout indicating the number of answers needed -->
-    @if (item().question.isMultipleChoice) {
-      <div class="question-tip" [class.tip-confirmed]="item().isConfirmed">
-        <div class="tip-main">
-          <span class="tip-icon">💡</span>
-          <span class="tip-text">
-            <strong>{{ item().question.expectedCorrectCount }} answers required</strong> for this question.
-          </span>
-        </div>
-
-        @if (isActive() && !item().isConfirmed) {
-          <div class="tip-count-pill"
-            [class.count-complete]="item().selectedOptionIds.length === item().question.expectedCorrectCount"
-            [class.count-over]="item().selectedOptionIds.length > item().question.expectedCorrectCount">
-            <span class="count-numbers">{{ item().selectedOptionIds.length }} / {{ item().question.expectedCorrectCount }}</span>
-            <span class="count-label">selected</span>
-          </div>
-        }
-      </div>
-    }
   </div>
 
   <!-- Options List -->
@@ -142,38 +109,58 @@
     }
   </div>
 
-  <!-- Feedback Summary Banner once confirmed (on active card) -->
-  @if (isActive() && item().isConfirmed) {
-    <div class="feedback-banner" [class.success]="item().isFullyCorrect" [class.failure]="!item().isFullyCorrect">
+  <!-- Feedback Summary Banner ONLY on incorrect answers -->
+  @if (isActive() && item().isConfirmed && !item().isFullyCorrect) {
+    <div class="feedback-banner failure">
       <div class="banner-icon">
-        {{ item().isFullyCorrect ? '🎉' : '💡' }}
+        💡
       </div>
       <div class="banner-body">
         <h4 class="banner-title">
-          {{ item().isFullyCorrect ? 'Excellent! 100% correct' : 'Incorrect answer' }}
+          Incorrect answer
         </h4>
         <p class="banner-message">
-          @if (item().isFullyCorrect) {
-            All expected answers were correctly identified without any errors.
-          } @else {
-            To pass this question, all correct answers must be selected without any incorrect ones.
-          }
+          To pass this question, all correct answers must be selected without any incorrect ones.
         </p>
       </div>
+    </div>
+  }
+
+  <!-- Checkbox: "Ne plus me poser cette question (trop simple)" upon validation -->
+  @if (item().isConfirmed) {
+    <div class="exclude-toggle-card" [class.is-excluded]="item().isExcluded">
+      <label class="exclude-toggle-label" [attr.for]="'cb-exclude-' + item().streamId">
+        <div class="checkbox-container">
+          <input 
+            type="checkbox" 
+            [id]="'cb-exclude-' + item().streamId" 
+            [checked]="item().isExcluded" 
+            (change)="onToggleNeverAskAgain()" 
+            class="sr-only-checkbox" />
+          <span class="custom-checkbox-ui">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+        </div>
+        <div class="exclude-toggle-text">
+          <span class="exclude-title">Ne plus me poser cette question</span>
+          <span class="exclude-description">
+            Cochez cette case si vous la jugez trop simple. Elle sera enregistrée en mémoire locale et écartée des prochains examens.
+          </span>
+        </div>
+      </label>
+      @if (item().isExcluded) {
+        <div class="exclude-confirmed-badge">
+          <span>✓ Enregistré : question écartée définitivement</span>
+        </div>
+      }
     </div>
   }
 
   <!-- Active Card Action Footer (Only for active question) -->
   @if (isActive()) {
     <div class="card-footer">
-      <div class="footer-hint">
-        @if (!item().isConfirmed) {
-          <span>Select your option(s) then confirm.</span>
-        } @else {
-          <span class="text-success">Answer recorded. Ready for the next question!</span>
-        }
-      </div>
-
       <div class="footer-actions">
         @if (!item().isConfirmed) {
           <!-- Confirm Button -->

@@ -229,6 +229,80 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Memory Stats Group */
+.memory-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.memory-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.memory-chip .chip-count {
+  font-weight: 800;
+  font-feature-settings: "tnum";
+}
+
+.memory-chip .chip-label {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.chip-unanswered {
+  background: rgba(14, 165, 233, 0.12);
+  color: #38bdf8;
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+.chip-unanswered .chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.chip-failed {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.chip-mastered {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.chip-excluded {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.25);
+  cursor: pointer;
+}
+
+.chip-excluded:hover {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fda4af;
+  border-color: rgba(244, 63, 94, 0.35);
+}
+
+@media (max-width: 900px) {
+  .memory-stats-group {
+    display: none;
+  }
+}
+
 @media (max-width: 760px) {
   .app-header {
     flex-wrap: wrap;

@@ -6,11 +6,21 @@ export interface QuestionOption {
 
 export interface Question {
   id: number;
+  hash: string;
   title: string;
   instruction?: string;
   options: QuestionOption[];
   isMultipleChoice: boolean;
   expectedCorrectCount: number;
+}
+
+export interface QuestionMemoryRecord {
+  hash: string;
+  question: string;
+  options: string[];
+  history: boolean[]; // true = correct / réussi, false = failed / échec (max 5)
+  neverAskAgain: boolean;
+  updatedAt?: string;
 }
 
 export interface ActiveQuestionItem {
@@ -21,6 +31,9 @@ export interface ActiveQuestionItem {
   isFullyCorrect: boolean | null;
   questionNumber: number;
   answeredAt?: Date;
+  isExcluded?: boolean;
+  memoryHistory?: boolean[];
+  servedReason?: 'unanswered' | 'retry_failed' | 'cycle' | 'retry_mode';
 }
 
 export interface SessionStats {
@@ -28,4 +41,12 @@ export interface SessionStats {
   correctCount: number;
   incorrectCount: number;
   ratingPercentage: number;
+}
+
+export interface QuizMemoryStats {
+  totalQuestions: number;
+  unansweredCount: number;
+  recentlyFailedCount: number;
+  masteredCount: number;
+  excludedCount: number;
 }

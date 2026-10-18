@@ -2,21 +2,6 @@
   <!-- Modular Header with Global Rating % & Actions -->
   <app-header (openEditor)="openEditor()" />
 
-  <!-- Practice / Retry Mode Banner -->
-  @if (quiz.isRetryMode()) {
-    <div class="retry-banner">
-      <div class="retry-banner-info">
-        <span class="retry-badge">⚡ Practice Mode</span>
-        <span class="retry-message">
-          Reviewing <strong>{{ quiz.failedCount() }} failed question{{ quiz.failedCount() > 1 ? 's' : '' }}</strong>. Answer correctly to master them!
-        </span>
-      </div>
-      <button class="btn-exit-retry" (click)="quiz.exitRetryMode()">
-        Exit Practice Mode
-      </button>
-    </div>
-  }
-
   <!-- Main Content Area -->
   <main class="main-content">
     <!-- Loading State -->

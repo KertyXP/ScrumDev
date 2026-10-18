@@ -24,6 +24,16 @@ export class QuestionCardComponent {
     return this.isActive() && !it.isConfirmed && it.selectedOptionIds.length > 0;
   });
 
+  readonly displayInstruction = computed<string | null>(() => {
+    const inst = this.item().question.instruction;
+    if (!inst) return null;
+    const lower = inst.toLowerCase();
+    if (lower.includes('choose the best answer') || lower.includes('choose best answer')) {
+      return null;
+    }
+    return inst;
+  });
+
   getOptionStatus(option: QuestionOption): {
     status: 'correct-picked' | 'correct-missed' | 'incorrect-picked' | 'neutral';
     label: string;
@@ -64,5 +74,13 @@ export class QuestionCardComponent {
 
   onNext(): void {
     this.next.emit();
+  }
+
+  onToggleNeverAskAgain(): void {
+    if (this.isActive()) {
+      this.quiz.toggleNeverAskAgainActive();
+    } else {
+      this.quiz.toggleQuestionExcludedByHash(this.item().question.hash);
+    }
   }
 }
