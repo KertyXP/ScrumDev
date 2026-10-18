@@ -106,9 +106,6 @@ export class QuizService {
   readonly history = signal<ActiveQuestionItem[]>([]);
   readonly showHistory = signal<boolean>(true);
 
-  // Retry mode (practice only failed questions)
-  readonly isRetryMode = signal<boolean>(false);
-
   // Persistent Overall Stats from localStorage
   private readonly initialStats = this.loadStoredStats();
   readonly answeredCount = signal<number>(this.initialStats.answeredCount);
@@ -131,14 +128,11 @@ export class QuizService {
   readonly sessionStats = computed<SessionStats>(() => {
     const answered = this.answeredCount();
     const correct = this.correctCount();
-    const incorrect = answered - correct;
-    const rating = answered === 0 ? 100 : Math.round((correct / answered) * 100);
-
     return {
       answeredCount: answered,
       correctCount: correct,
-      incorrectCount: incorrect,
-      ratingPercentage: rating,
+      incorrectCount: answered - correct,
+      ratingPercentage: this.ratingPercentage(),
     };
   });
 
@@ -173,8 +167,6 @@ export class QuizService {
       excludedCount,
     };
   });
-
-  readonly failedCount = computed<number>(() => this.memoryStats().recentlyFailedCount);
 
   constructor() {
     this.loadDefaultQuestions();
@@ -267,14 +259,12 @@ export class QuizService {
   /**
    * Selection strategy:
    * 1. Exclude questions marked as `neverAskAgain`.
-   * 2. In retry mode: pick from recently failed questions (> 40% failures).
-   * 3. In normal exam mode:
-   *    - Every FAILED_RETRY_INTERVAL questions (e.g. 1 out of 5), pick a recently failed question (> 40% failures).
-   *    - Otherwise, pick in priority from UNANSWERED questions.
-   *    - If all questions are answered, pick from recently failed questions.
-   *    - If no questions are failing, cycle through all eligible questions.
+   * 2. Every FAILED_RETRY_INTERVAL questions (1 out of 5), pick a recently failed question (> 40% failures).
+   * 3. Otherwise, pick in priority from UNANSWERED questions.
+   * 4. If all questions are answered, pick from recently failed questions.
+   * 5. If no questions are failing, cycle through all eligible questions.
    */
-  private getNextQuestion(): { question: Question; reason: ActiveQuestionItem['servedReason'] } | null {
+  private getNextQuestion(): Question | null {
     const all = this.allQuestions();
     if (all.length === 0) return null;
 
@@ -296,19 +286,6 @@ export class QuizService {
       return mem && mem.history.length > 0 && isRecentlyFailed(mem.history, QUIZ_CONFIG.FAILURE_RATE_THRESHOLD);
     });
 
-    // Practice / Retry Mode
-    if (this.isRetryMode()) {
-      if (recentlyFailed.length > 0) {
-        return {
-          question: this.pickRandom(recentlyFailed),
-          reason: 'retry_mode',
-        };
-      } else {
-        // All failed questions are resolved
-        this.isRetryMode.set(false);
-      }
-    }
-
     // Questions not yet answered by the user
     const unanswered = eligible.filter((q) => {
       const mem = memMap.get(q.hash);
@@ -317,40 +294,27 @@ export class QuizService {
 
     this.examQuestionCounter++;
 
-    // "de temps en temps (1 fois sur 5 ? constante à mettre en config), on lui fait repasser une question qu'il a échoué récemment (> 40% d'échecs sur la question --> à rejouer)"
+    // "1 fois sur 5 : repasser une question échouée récemment (> 40% d'échecs)"
     const isRetrySlot =
       this.examQuestionCounter > 1 &&
       this.examQuestionCounter % QUIZ_CONFIG.FAILED_RETRY_INTERVAL === 0;
 
     if (isRetrySlot && recentlyFailed.length > 0) {
-      return {
-        question: this.pickRandom(recentlyFailed),
-        reason: 'retry_failed',
-      };
+      return this.pickRandom(recentlyFailed);
     }
 
-    // "il pioche en priorité les questions auxquels l'user n'a pas encore répondu"
+    // "Priorité aux questions auxquelles l'user n'a pas encore répondu"
     if (unanswered.length > 0) {
-      return {
-        question: this.pickRandom(unanswered),
-        reason: 'unanswered',
-      };
+      return this.pickRandom(unanswered);
     }
 
-    // If all questions have already been answered at least once:
-    // Priority to questions with > 40% failure
+    // Si toutes les questions ont déjà été répondues, repasser celles en échec
     if (recentlyFailed.length > 0) {
-      return {
-        question: this.pickRandom(recentlyFailed),
-        reason: 'retry_failed',
-      };
+      return this.pickRandom(recentlyFailed);
     }
 
-    // Otherwise, cycle through eligible questions
-    return {
-      question: this.pickRandom(eligible),
-      reason: 'cycle',
-    };
+    // Sinon, cycle parmi les questions éligibles
+    return this.pickRandom(eligible);
   }
 
   private pickRandom(candidates: Question[]): Question {
@@ -430,7 +394,6 @@ export class QuizService {
     this.examQuestionCounter = 0;
     this.history.set([]);
     this.activeItem.set(null);
-    this.isRetryMode.set(false);
 
     if (this.allQuestions().length > 0) {
       this.loadNextQuestionAtTop();
@@ -447,13 +410,12 @@ export class QuizService {
   }
 
   loadNextQuestionAtTop(): void {
-    const result = this.getNextQuestion();
-    if (!result) {
+    const nextQ = this.getNextQuestion();
+    if (!nextQ) {
       this.activeItem.set(null);
       return;
     }
 
-    const { question: nextQ, reason } = result;
     this.lastQuestionId = nextQ.id;
     this.sessionCounter++;
 
@@ -470,8 +432,6 @@ export class QuizService {
       isFullyCorrect: null,
       questionNumber: this.sessionCounter,
       isExcluded: mem?.neverAskAgain ?? false,
-      memoryHistory: mem?.history ? [...mem.history] : [],
-      servedReason: reason,
     };
 
     this.activeItem.set(newItem);
@@ -542,7 +502,6 @@ export class QuizService {
       isFullyCorrect,
       answeredAt: new Date(),
       isExcluded,
-      memoryHistory: newHistory,
     };
 
     this.activeItem.set(confirmedItem);
@@ -623,17 +582,6 @@ export class QuizService {
       this.history.update((prev) => [current, ...prev]);
     }
 
-    this.loadNextQuestionAtTop();
-  }
-
-  startRetryMode(): void {
-    if (this.failedCount() === 0) return;
-    this.isRetryMode.set(true);
-    this.loadNextQuestionAtTop();
-  }
-
-  exitRetryMode(): void {
-    this.isRetryMode.set(false);
     this.loadNextQuestionAtTop();
   }
 

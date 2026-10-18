@@ -7,67 +7,6 @@
   gap: 24px;
 }
 
-/* Practice / Retry Mode Banner */
-.retry-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 14px;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.1) 100%);
-  border: 1px solid rgba(245, 158, 11, 0.45);
-  border-left: 4px solid #f59e0b;
-  border-radius: var(--radius-md);
-  padding: 14px 20px;
-  animation: fadeIn 0.3s ease-out;
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.15);
-}
-
-.retry-banner-info {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.retry-badge {
-  background: rgba(245, 158, 11, 0.25);
-  color: #fef3c7;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: 0.78rem;
-  font-weight: 700;
-  border: 1px solid rgba(245, 158, 11, 0.4);
-}
-
-.retry-message {
-  color: #fef3c7;
-  font-size: 0.9rem;
-}
-
-.retry-message strong {
-  color: #fbbf24;
-}
-
-.btn-exit-retry {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: var(--radius-sm);
-  color: #fff;
-  font-size: 0.84rem;
-  font-weight: 600;
-  transition: all var(--transition-fast);
-}
-
-.btn-exit-retry:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateY(-1px);
-}
-
 .main-content {
   display: flex;
   flex-direction: column;
@@ -134,14 +73,5 @@
 @media (max-width: 720px) {
   .app-container {
     padding: 12px 12px 60px;
-  }
-
-  .retry-banner {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .btn-exit-retry {
-    justify-content: center;
   }
 }

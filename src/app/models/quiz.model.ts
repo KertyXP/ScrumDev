@@ -32,8 +32,6 @@ export interface ActiveQuestionItem {
   questionNumber: number;
   answeredAt?: Date;
   isExcluded?: boolean;
-  memoryHistory?: boolean[];
-  servedReason?: 'unanswered' | 'retry_failed' | 'cycle' | 'retry_mode';
 }
 
 export interface SessionStats {
